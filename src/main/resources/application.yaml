@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: spring-gift
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+  h2:
+    console:
+      enabled: true
+  datasource:
+    driverClassName: org.h2.Driver
+    url: jdbc:h2:mem:gift
+    username: sa
+    password:
+
+jwt:
+  secret:
+    key: Yn2kjibddFAWtnPJ2AFlL8WXmohJMCvigQggaEypa5E=
