@@ -26,7 +26,7 @@ public class MemberService {
 
     @Transactional
     public TokenResponseDto registerMember(MemberRequestDto memberRequestDto) {
-        if (memberRepository.findMemberByEmail(memberRequestDto.email()).isPresent()) {
+        if (memberRepository.findByEmail(memberRequestDto.email()).isPresent()) {
             throw new EmailAlreadyExistsException(memberRequestDto.email());
         }
 
@@ -36,14 +36,15 @@ public class MemberService {
                 MemberRole.ROLE_USER
         );
 
-        Long savedId = memberRepository.saveMember(member);
+        Member savedMember = memberRepository.save(member);
 
-        return new TokenResponseDto(jwtProvider.generateToken(savedId, member.getRole()));
+        return new TokenResponseDto(
+                jwtProvider.generateToken(savedMember.getId(), savedMember.getRole()));
     }
 
     @Transactional(readOnly = true)
     public TokenResponseDto loginMember(MemberRequestDto memberRequestDto) {
-        Member member = memberRepository.findMemberByEmail(memberRequestDto.email())
+        Member member = memberRepository.findByEmail(memberRequestDto.email())
                                         .orElseThrow(LoginFailedException::new);
 
         if (!BCrypt.checkpw(memberRequestDto.password(), member.getPassword())) {
@@ -56,6 +57,6 @@ public class MemberService {
     @Transactional(readOnly = true)
     public Optional<Member> getMemberById(Long id) {
 
-        return memberRepository.findMemberById(id);
+        return memberRepository.findById(id);
     }
 }
