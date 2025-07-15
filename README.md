@@ -7,6 +7,6 @@
 - [ ] JDBC -> JPA
     - [x] Product
     - [x] Member
-    - [ ] Wish
+    - [x] Wish
 - [ ] 테스트 코드 작성
     - [ ] @DataJpaTest

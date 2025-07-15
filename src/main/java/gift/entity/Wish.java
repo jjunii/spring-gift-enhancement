@@ -1,25 +1,52 @@
 package gift.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+
+@Entity
+@Table(uniqueConstraints = {
+        @UniqueConstraint(
+                name = "member_product_unique",
+                columnNames = {"member_id", "product_id"}
+        )
+})
 public class Wish {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long memberId;
-    private Long productId;
 
-    public Wish(Long memberId, Long productId) {
-        this.memberId = memberId;
-        this.productId = productId;
+    @ManyToOne
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    protected Wish() {
+    }
+
+    public Wish(Member member, Product product) {
+        this.member = member;
+        this.product = product;
     }
 
     public Long getId() {
         return id;
     }
 
-    public Long getMemberId() {
-        return memberId;
+    public Member getMember() {
+        return member;
     }
 
-    public Long getProductId() {
-        return productId;
+    public Product getProduct() {
+        return product;
     }
 }
