@@ -8,5 +8,5 @@
     - [x] Product
     - [x] Member
     - [x] Wish
-- [ ] 테스트 코드 작성
-    - [ ] @DataJpaTest
+- [x] 테스트 코드 작성
+    - [x] @DataJpaTest
