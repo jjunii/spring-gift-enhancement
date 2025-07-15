@@ -15,11 +15,12 @@ spring:
     password:
   jpa:
     hibernate:
-      ddl-auto: none # create
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
     show-sql: true
+    defer-datasource-initialization: true
 
 jwt:
   secret:

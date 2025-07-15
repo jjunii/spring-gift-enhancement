@@ -4,7 +4,7 @@
 
 ## 1️⃣ step1: 엔티티 매핑
 
-- [ ] JDBC -> JPA
+- [x] JDBC -> JPA
     - [x] Product
     - [x] Member
     - [x] Wish
