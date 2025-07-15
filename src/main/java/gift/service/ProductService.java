@@ -21,11 +21,13 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto saveProduct(ProductRequestDto productRequestDto) {
-        Product product = new Product(null, productRequestDto.name(),
-                productRequestDto.price(), productRequestDto.imageUrl(),
+        Product product = new Product(
+                productRequestDto.name(),
+                productRequestDto.price(),
+                productRequestDto.imageUrl(),
                 ProductStatus.getProductStatus(productRequestDto.name()));
 
-        Product savedProduct = productRepository.saveProduct(product);
+        Product savedProduct = productRepository.save(product);
 
         return ProductResponseDto.from(savedProduct);
     }
@@ -47,8 +49,6 @@ public class ProductService {
                 ProductStatus.getProductStatus(productRequestDto.name())
         );
 
-        productRepository.updateProduct(product);
-
         return ProductResponseDto.from(product);
     }
 
@@ -56,13 +56,13 @@ public class ProductService {
     public void deleteProduct(Long productId) {
         findProductOrThrow(productId);
 
-        productRepository.deleteProduct(productId);
+        productRepository.deleteById(productId);
     }
 
     @Transactional(readOnly = true)
     public List<ProductResponseDto> findAllProducts() {
 
-        return productRepository.findAllProducts()
+        return productRepository.findAll()
                                 .stream()
                                 .map(ProductResponseDto::from)
                                 .toList();
@@ -70,21 +70,22 @@ public class ProductService {
 
     @Transactional
     public void updateProductStatus(Long productId, ProductStatus newStatus) {
-        findProductOrThrow(productId);
-        productRepository.updateProductStatus(productId, newStatus);
+        Product product = findProductOrThrow(productId);
+
+        product.changeStatus(newStatus);
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponseDto> findProductsByIdsIn(List<Long> productIds) {
+    public List<ProductResponseDto> findProductsByIdsIn(List<Long> ids) {
 
-        return productRepository.findProductsByIdsIn(productIds)
+        return productRepository.findAllById(ids)
                                 .stream()
                                 .map(ProductResponseDto::from)
                                 .toList();
     }
 
     Product findProductOrThrow(Long productId) {
-        return productRepository.findProduct(productId)
+        return productRepository.findById(productId)
                                 .orElseThrow(() -> new ProductNotFoundException(productId));
     }
 }
