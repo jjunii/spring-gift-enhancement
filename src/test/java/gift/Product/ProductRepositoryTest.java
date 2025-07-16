@@ -18,7 +18,7 @@ public class ProductRepositoryTest {
     private ProductRepository productRepository;
 
     @Test
-    void saveAndFindById() {
+    void save() {
         Product product = new Product("상품", 10000, "https://example.com/image.jpg",
                 ProductStatus.APPROVED);
 
@@ -28,8 +28,15 @@ public class ProductRepositoryTest {
                 () -> assertThat(savedProduct.getId()).isNotNull(),
                 () -> assertThat(savedProduct.getName()).isEqualTo(product.getName())
         );
+    }
 
-        Product foundProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
+    @Test
+    void findById() {
+        Product product = new Product("상품", 10000, "https://example.com/image.jpg",
+                ProductStatus.APPROVED);
+        productRepository.save(product);
+
+        Product foundProduct = productRepository.findById(product.getId()).orElseThrow();
 
         assertThat(foundProduct.getName()).isEqualTo(product.getName());
     }

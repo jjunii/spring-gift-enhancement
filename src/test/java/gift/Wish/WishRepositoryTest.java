@@ -46,14 +46,20 @@ public class WishRepositoryTest {
     }
 
     @Test
-    void saveAndFindById() {
+    void save() {
         Wish wish = new Wish(testMember, testProduct1);
 
         Wish savedWish = wishRepository.save(wish);
 
         assertThat(savedWish.getId()).isNotNull();
+    }
 
-        Wish foundWish = wishRepository.findById(savedWish.getId()).orElseThrow();
+    @Test
+    void findById() {
+        Wish wish = new Wish(testMember, testProduct1);
+        wishRepository.save(wish);
+
+        Wish foundWish = wishRepository.findById(wish.getId()).orElseThrow();
 
         assertAll(
                 () -> assertThat(foundWish.getMember().getId()).isEqualTo(testMember.getId()),
