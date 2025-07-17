@@ -5,6 +5,9 @@ import gift.entity.ProductStatus;
 import gift.exception.ProductNotFoundException;
 import gift.service.ProductService;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,9 +34,19 @@ public class AdminController {
 
     // 상품 목록 조회
     @GetMapping
-    public String listProducts(Model model) {
-        model.addAttribute("products", productService.findAllProducts());
+    public String listProducts(
+            Model model,
+            Pageable pageable) {
+
+        model.addAttribute("productPage", productService.findAllProducts(pageable));
         model.addAttribute("allStatuses", ProductStatus.values());
+
+        List<String> sortParams = pageable.getSort().stream()
+                                          .map(order -> order.getProperty() + ","
+                                                  + order.getDirection().name().toLowerCase())
+                                          .collect(Collectors.toList());
+        model.addAttribute("sortParams", sortParams);
+
         return "admin/products/list";
     }
 

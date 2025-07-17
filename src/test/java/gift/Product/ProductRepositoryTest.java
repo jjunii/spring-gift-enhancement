@@ -10,6 +10,10 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @DataJpaTest
 public class ProductRepositoryTest {
@@ -42,11 +46,18 @@ public class ProductRepositoryTest {
     }
 
     @Test
-    void findAll() {
-        // data.sql의 sample products
-        List<Product> products = productRepository.findAll();
+    void findAll_with_pagination() {
+        Pageable pageable = PageRequest.of(0, 5, Sort.by("price").descending());
+        Page<Product> productPage = productRepository.findAll(pageable);
 
-        assertThat(products).hasSize(6);
+        // data.sql의 sample products
+        assertAll(
+                () -> assertThat(productPage.getTotalElements()).isEqualTo(6),
+                () -> assertThat(productPage.getNumber()).isEqualTo(0),
+                () -> assertThat(productPage.getSize()).isEqualTo(5),
+                () -> assertThat(productPage.getContent()).hasSize(5),
+                () -> assertThat(productPage.getContent().get(0).getPrice()).isEqualTo(6000)
+        );
     }
 
     @Test

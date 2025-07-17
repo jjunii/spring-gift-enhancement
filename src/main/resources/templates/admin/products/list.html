@@ -28,7 +28,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="product : ${products}">
+    <tr th:each="product : ${productPage.content}">
       <td class="align-middle text-center" th:text="${product.name}"></td>
       <td class="align-middle text-center" th:text="${product.price}"></td>
       <td class="align-middle" th:text="${product.imageUrl}"></td>
@@ -75,6 +75,31 @@
     </tr>
     </tbody>
   </table>
+
+  <nav aria-label="Page navigation" th:if="${productPage.totalPages > 1}">
+    <ul class="pagination justify-content-center">
+
+      <!-- 'Previous' Page Link -->
+      <li class="page-item" th:classappend="${productPage.first} ? 'disabled'">
+        <a class="page-link"
+           th:href="@{/admin/products(page=${productPage.number - 1}, sort=${sortParams})}">&laquo;</a>
+      </li>
+
+      <!-- Page Number Links -->
+      <li class="page-item"
+          th:each="pageNumber : ${#numbers.sequence(0, productPage.totalPages - 1)}"
+          th:classappend="${pageNumber == productPage.number} ? 'active'">
+        <a class="page-link" th:href="@{/admin/products(page=${pageNumber}, sort=${sortParams})}"
+           th:text="${pageNumber + 1}"></a>
+      </li>
+
+      <!-- 'Next' Page Link -->
+      <li class="page-item" th:classappend="${productPage.last} ? 'disabled'">
+        <a class="page-link"
+           th:href="@{/admin/products(page=${productPage.number + 1}, sort=${sortParams})}">&raquo;</a>
+      </li>
+    </ul>
+  </nav>
 </div>
 </body>
 </html>

@@ -6,7 +6,8 @@ import gift.entity.Product;
 import gift.entity.ProductStatus;
 import gift.exception.ProductNotFoundException;
 import gift.repository.ProductRepository;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,12 +61,10 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponseDto> findAllProducts() {
+    public Page<ProductResponseDto> findAllProducts(Pageable pageable) {
 
-        return productRepository.findAll()
-                                .stream()
-                                .map(ProductResponseDto::from)
-                                .toList();
+        return productRepository.findAll(pageable)
+                                .map(ProductResponseDto::from);
     }
 
     @Transactional
@@ -73,15 +72,6 @@ public class ProductService {
         Product product = findProductOrThrow(productId);
 
         product.changeStatus(newStatus);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ProductResponseDto> findProductsByIdsIn(List<Long> ids) {
-
-        return productRepository.findAllById(ids)
-                                .stream()
-                                .map(ProductResponseDto::from)
-                                .toList();
     }
 
     Product findProductOrThrow(Long productId) {
