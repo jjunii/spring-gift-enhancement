@@ -49,6 +49,7 @@ public class ProductService {
                 productRequestDto.imageUrl(),
                 ProductStatus.getProductStatus(productRequestDto.name())
         );
+        productRepository.save(product);
 
         return ProductResponseDto.from(product);
     }
@@ -72,6 +73,8 @@ public class ProductService {
         Product product = findProductOrThrow(productId);
 
         product.changeStatus(newStatus);
+
+        productRepository.save(product);
     }
 
     Product findProductOrThrow(Long productId) {
