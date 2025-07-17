@@ -12,7 +12,8 @@ import gift.exception.WishNotFoundException;
 import gift.repository.MemberRepository;
 import gift.repository.WishRepository;
 import gift.util.CurrentMemberContext;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,14 +50,12 @@ public class WishService {
     }
 
     @Transactional(readOnly = true)
-    public List<WishResponseDto> getWishlistByMemberId() {
+    public Page<WishResponseDto> getWishlistByMemberId(Pageable pageable) {
         Long memberId = CurrentMemberContext.getAuthenticatedMemberId();
 
-        List<Wish> wishes = wishRepository.findAllByMemberIdOrderById(memberId);
+        Page<Wish> wishes = wishRepository.findAllByMemberId(memberId, pageable);
 
-        return wishes.stream()
-                     .map(WishResponseDto::from)
-                     .toList();
+        return wishes.map(WishResponseDto::from);
     }
 
     @Transactional
