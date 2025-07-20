@@ -10,6 +10,10 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @DataJpaTest
 public class ProductRepositoryTest {
@@ -18,7 +22,7 @@ public class ProductRepositoryTest {
     private ProductRepository productRepository;
 
     @Test
-    void saveAndFindById() {
+    void save() {
         Product product = new Product("상품", 10000, "https://example.com/image.jpg",
                 ProductStatus.APPROVED);
 
@@ -28,18 +32,32 @@ public class ProductRepositoryTest {
                 () -> assertThat(savedProduct.getId()).isNotNull(),
                 () -> assertThat(savedProduct.getName()).isEqualTo(product.getName())
         );
+    }
 
-        Product foundProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
+    @Test
+    void findById() {
+        Product product = new Product("상품", 10000, "https://example.com/image.jpg",
+                ProductStatus.APPROVED);
+        productRepository.save(product);
+
+        Product foundProduct = productRepository.findById(product.getId()).orElseThrow();
 
         assertThat(foundProduct.getName()).isEqualTo(product.getName());
     }
 
     @Test
-    void findAll() {
-        // data.sql의 sample products
-        List<Product> products = productRepository.findAll();
+    void findAll_with_pagination() {
+        Pageable pageable = PageRequest.of(0, 5, Sort.by("price").descending());
+        Page<Product> productPage = productRepository.findAll(pageable);
 
-        assertThat(products).hasSize(6);
+        // data.sql의 sample products
+        assertAll(
+                () -> assertThat(productPage.getTotalElements()).isEqualTo(6),
+                () -> assertThat(productPage.getNumber()).isEqualTo(0),
+                () -> assertThat(productPage.getSize()).isEqualTo(5),
+                () -> assertThat(productPage.getContent()).hasSize(5),
+                () -> assertThat(productPage.getContent().get(0).getPrice()).isEqualTo(6000)
+        );
     }
 
     @Test

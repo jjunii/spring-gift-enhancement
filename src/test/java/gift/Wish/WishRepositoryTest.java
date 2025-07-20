@@ -11,12 +11,15 @@ import gift.entity.Wish;
 import gift.repository.MemberRepository;
 import gift.repository.ProductRepository;
 import gift.repository.WishRepository;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @DataJpaTest
 public class WishRepositoryTest {
@@ -46,14 +49,20 @@ public class WishRepositoryTest {
     }
 
     @Test
-    void saveAndFindById() {
+    void save() {
         Wish wish = new Wish(testMember, testProduct1);
 
         Wish savedWish = wishRepository.save(wish);
 
         assertThat(savedWish.getId()).isNotNull();
+    }
 
-        Wish foundWish = wishRepository.findById(savedWish.getId()).orElseThrow();
+    @Test
+    void findById() {
+        Wish wish = new Wish(testMember, testProduct1);
+        wishRepository.save(wish);
+
+        Wish foundWish = wishRepository.findById(wish.getId()).orElseThrow();
 
         assertAll(
                 () -> assertThat(foundWish.getMember().getId()).isEqualTo(testMember.getId()),
@@ -62,16 +71,17 @@ public class WishRepositoryTest {
     }
 
     @Test
-    void findAllByMemberIdOrderById() {
+    void findAllByMemberId_with_pagination() {
         wishRepository.save(new Wish(testMember, testProduct1));
         wishRepository.save(new Wish(testMember, testProduct2));
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("id").descending());
 
-        List<Wish> wishes = wishRepository.findAllByMemberIdOrderById(testMember.getId());
+        Page<Wish> wishPage = wishRepository.findAllByMemberId(testMember.getId(), pageable);
 
         assertAll(
-                () -> assertThat(wishes).hasSize(2),
-                () -> assertThat(wishes.get(0).getProduct()).isEqualTo(testProduct1),
-                () -> assertThat(wishes.get(1).getProduct()).isEqualTo(testProduct2)
+                () -> assertThat(wishPage.getTotalElements()).isEqualTo(2),
+                () -> assertThat(wishPage.getContent().get(0).getProduct()).isEqualTo(testProduct2),
+                () -> assertThat(wishPage.getContent().get(1).getProduct()).isEqualTo(testProduct1)
         );
     }
 

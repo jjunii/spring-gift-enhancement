@@ -3,7 +3,8 @@ package gift.controller;
 import gift.dto.WishRequestDto;
 import gift.dto.WishResponseDto;
 import gift.service.WishService;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,9 +36,9 @@ public class WishController {
 
     // 상품 목록 조회
     @GetMapping
-    public ResponseEntity<List<WishResponseDto>> getWishlistByMemberId() {
+    public ResponseEntity<Page<WishResponseDto>> getWishlistByMemberId(Pageable pageable) {
 
-        return ResponseEntity.ok(wishService.getWishlistByMemberId());
+        return ResponseEntity.ok(wishService.getWishlistByMemberId(pageable));
     }
 
     // 상품 삭제

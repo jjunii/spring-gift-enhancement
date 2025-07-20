@@ -1,13 +1,19 @@
 package gift.Wish;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonCreator.Mode;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import gift.config.JwtProvider;
 import gift.dto.WishRequestDto;
 import gift.dto.WishResponseDto;
 import gift.entity.MemberRole;
 import gift.entity.ProductStatus;
+import java.net.URI;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
@@ -15,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -23,6 +31,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Sql(scripts = "/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -108,7 +117,10 @@ public class WishTest {
 
     @Test
     void 상품_목록_조회_성공() {
-        String url = "http://localhost:" + port + "/api/wishes";
+        String url = "http://localhost:" + port
+                + "/api/wishes?page={page}&size={size}&sort={sortBy}";
+        URI uri = UriComponentsBuilder.fromUriString(url)
+                                      .build(0, 5, "product_price,desc");
         Long member1Id = setUpMember("user1@email.com", "password1", MemberRole.ROLE_USER);
         Long member2Id = setUpMember("user2@email.com", "password2", MemberRole.ROLE_USER);
 
@@ -125,19 +137,26 @@ public class WishTest {
 
         String token1 = jwtProvider.generateToken(member1Id, MemberRole.ROLE_USER);
 
-        ResponseEntity<List<WishResponseDto>> responseEntity = client.get()
-                                                                     .uri(url)
-                                                                     .header("Authorization",
-                                                                             "Bearer " + token1)
-                                                                     .retrieve()
-                                                                     .toEntity(
-                                                                             new ParameterizedTypeReference<>() {
-                                                                             });
+        ResponseEntity<PageResponse<WishResponseDto>> responseEntity = client.get()
+                                                                             .uri(uri)
+                                                                             .header("Authorization",
+                                                                                     "Bearer "
+                                                                                             + token1)
+                                                                             .retrieve()
+                                                                             .toEntity(
+                                                                                     new ParameterizedTypeReference<>() {
+                                                                                     });
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(responseEntity.getBody())
-                .isNotNull()
-                .hasSize(2);
+
+        PageResponse<WishResponseDto> page = responseEntity.getBody();
+        assertAll(
+                () -> assertThat(page.getTotalElements()).isEqualTo(2),
+                () -> assertThat(page.getNumber()).isEqualTo(0),
+                () -> assertThat(page.getSize()).isEqualTo(5),
+                () -> assertThat(page.getContent()).hasSize(2),
+                () -> assertThat(page.getContent().get(0).product().price()).isEqualTo(3000)
+        );
     }
 
     @Test
@@ -275,5 +294,23 @@ public class WishTest {
                   .update(keyHolder);
 
         return keyHolder.getKey().longValue();
+    }
+
+    static class PageResponse<T> extends PageImpl<T> {
+
+        @JsonCreator(mode = Mode.PROPERTIES)
+        public PageResponse(@JsonProperty("content") List<T> content,
+                @JsonProperty("number") int number,
+                @JsonProperty("size") int size,
+                @JsonProperty("totalElements") Long totalElements,
+                @JsonProperty("pageable") JsonNode pageable,
+                @JsonProperty("last") boolean last,
+                @JsonProperty("totalPages") int totalPages,
+                @JsonProperty("sort") JsonNode sort,
+                @JsonProperty("first") boolean first,
+                @JsonProperty("numberOfElements") int numberOfElements
+        ) {
+            super(content, PageRequest.of(number, size), totalElements);
+        }
     }
 }

@@ -7,6 +7,7 @@ import gift.entity.Member;
 import gift.entity.MemberRole;
 import gift.repository.MemberRepository;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,15 @@ public class MemberRepositoryTest {
     @Autowired
     private MemberRepository memberRepository;
 
+    private String hashedPassword;
+
+    @BeforeEach
+    void setUp() {
+        hashedPassword = BCrypt.hashpw("password", BCrypt.gensalt());
+    }
+
     @Test
-    void saveAndFindById() {
-        String hashedPassword = BCrypt.hashpw("password", BCrypt.gensalt());
+    void save() {
         Member member = new Member("user@email.com", hashedPassword, MemberRole.ROLE_USER);
 
         Member savedMember = memberRepository.save(member);
@@ -29,17 +36,22 @@ public class MemberRepositoryTest {
                 () -> assertThat(savedMember.getId()).isNotNull(),
                 () -> assertThat(savedMember.getEmail()).isEqualTo("user@email.com")
         );
+    }
 
-        Member foundMember = memberRepository.findById(savedMember.getId()).orElseThrow();
+    @Test
+    void findById() {
+        Member member = new Member("user@email.com", hashedPassword, MemberRole.ROLE_USER);
+        memberRepository.save(member);
+
+        Member foundMember = memberRepository.findById(member.getId()).orElseThrow();
 
         assertThat(foundMember.getEmail()).isEqualTo("user@email.com");
     }
 
     @Test
     void findByEmail() {
-        String hashedPassword = BCrypt.hashpw("password", BCrypt.gensalt());
         Member member = new Member("user@email.com", hashedPassword, MemberRole.ROLE_USER);
-        Member savedMember = memberRepository.save(member);
+        memberRepository.save(member);
 
         Optional<Member> foundMember1 = memberRepository.findByEmail("fakeUser@email.com");
         Optional<Member> foundMember2 = memberRepository.findByEmail("user@email.com");
