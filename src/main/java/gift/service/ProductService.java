@@ -3,10 +3,12 @@ package gift.service;
 import gift.dto.ProductCreateRequestDto;
 import gift.dto.ProductResponseDto;
 import gift.dto.ProductUpdateRequestDto;
+import gift.entity.Option;
 import gift.entity.Product;
 import gift.entity.ProductStatus;
 import gift.exception.ProductNotFoundException;
 import gift.repository.ProductRepository;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,13 @@ public class ProductService {
                 productCreateDto.price(),
                 productCreateDto.imageUrl(),
                 ProductStatus.getProductStatus(productCreateDto.name()));
+
+        List<Option> options = productCreateDto.options().stream()
+                                               .map(optionRequestDto -> new Option(
+                                                       optionRequestDto.name(),
+                                                       optionRequestDto.quantity()))
+                                               .toList();
+        options.forEach(product::addOption);
 
         Product savedProduct = productRepository.save(product);
 
@@ -57,6 +66,17 @@ public class ProductService {
 
         if (productUpdateDto.imageUrl() != null && !productUpdateDto.imageUrl().isBlank()) {
             product.updateImageUrl(productUpdateDto.imageUrl());
+        }
+
+        if (productUpdateDto.options() != null && !productUpdateDto.options().isEmpty()) {
+            product.getOptions().clear();
+
+            List<Option> options = productUpdateDto.options().stream()
+                                                   .map(optionRequestDto -> new Option(
+                                                           optionRequestDto.name(),
+                                                           optionRequestDto.quantity()))
+                                                   .toList();
+            options.forEach(product::addOption);
         }
 
         productRepository.save(product);

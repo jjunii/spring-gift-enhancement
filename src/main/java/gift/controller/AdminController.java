@@ -66,7 +66,7 @@ public class AdminController {
     // 상품 추가
     @GetMapping("/new")
     public String newProduct(Model model) {
-        model.addAttribute("product", new ProductCreateRequestDto("", 0, ""));
+        model.addAttribute("product", new ProductCreateRequestDto("", 0, "", null));
         return "admin/products/new";
     }
 
