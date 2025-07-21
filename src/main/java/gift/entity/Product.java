@@ -78,6 +78,7 @@ public class Product {
 
     public void removeOption(Option option) {
         options.remove(option);
+        option.setProduct(null);
     }
 
     public Long getId() {
