@@ -1,5 +1,6 @@
 package gift.entity;
 
+import gift.exception.InsufficientQuantityException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -47,6 +48,9 @@ public class Option {
     }
 
     public void subtract(Integer quantity) {
+        if (this.quantity < quantity) {
+            throw new InsufficientQuantityException(this.quantity);
+        }
         this.quantity -= quantity;
     }
 

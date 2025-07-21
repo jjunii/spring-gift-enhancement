@@ -165,4 +165,17 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.of(pd).build();
     }
+
+    @ExceptionHandler(InsufficientQuantityException.class)
+    public ResponseEntity<ProblemDetail> handleInsufficientQuantityException(
+            InsufficientQuantityException ex) {
+
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+
+        pd.setType(URI.create("/errors/insufficient-quantity"));
+        pd.setTitle("옵션의 수량을 차감할 수 없습니다.");
+        pd.setDetail(ex.getMessage());
+
+        return ResponseEntity.of(pd).build();
+    }
 }
