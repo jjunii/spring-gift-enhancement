@@ -1,14 +1,20 @@
 package gift.Option;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonCreator.Mode;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import gift.dto.OptionRequestDto;
 import gift.dto.OptionResponseDto;
 import gift.entity.Option;
 import gift.entity.Product;
 import gift.entity.ProductStatus;
 import gift.repository.ProductRepository;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,6 +22,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
@@ -140,7 +149,8 @@ public class OptionTest {
 
     @Test
     void 옵션_삭제_성공() {
-        String url = "http://localhost:" + port + "/api/products/{productId}/options/{optionId}";
+        String deleteUrl =
+                "http://localhost:" + port + "/api/products/{productId}/options/{optionId}";
         Option option1 = new Option("테스트 옵션1", 10);
         Option option2 = new Option("테스트 옵션2", 20);
         testProduct.addOption(option1);
@@ -150,14 +160,74 @@ public class OptionTest {
 
         assertThat(savedProduct.getOptions().size()).isEqualTo(2);
 
-        ResponseEntity<Void> responseEntity = client.delete()
-                                                    .uri(url, savedProduct.getId(),
-                                                            savedProduct.getOptions().get(0)
-                                                                        .getId())
-                                                    .retrieve()
-                                                    .toBodilessEntity();
+        ResponseEntity<Void> deleteResponseEntity = client.delete()
+                                                          .uri(deleteUrl, savedProduct.getId(),
+                                                                  savedProduct.getOptions().get(0)
+                                                                              .getId())
+                                                          .retrieve()
+                                                          .toBodilessEntity();
 
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-//        assertThat(savedProduct.getOptions().size()).isEqualTo(1);
+        assertThat(deleteResponseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        String findUrl = "http://localhost:" + port + "/api/products/{productId}/options";
+        ResponseEntity<PageResponse<OptionResponseDto>> findResponseEntity = client.get()
+                                                                                   .uri(findUrl,
+                                                                                           savedProduct.getId())
+                                                                                   .retrieve()
+                                                                                   .toEntity(
+                                                                                           new ParameterizedTypeReference<>() {
+                                                                                           });
+
+        assertThat(findResponseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        OptionTest.PageResponse<OptionResponseDto> page = findResponseEntity.getBody();
+        assertThat(page.getContent().size()).isEqualTo(1);
+        assertThat(page.getContent().get(0).name()).isEqualTo("테스트 옵션2");
+    }
+
+    @Test
+    void 옵션_목록_조회_성공() {
+        String url = "http://localhost:" + port + "/api/products/{productId}/options";
+        Option option1 = new Option("테스트 옵션1", 10);
+        Option option2 = new Option("테스트 옵션2", 20);
+        testProduct.addOption(option1);
+        testProduct.addOption(option2);
+
+        Product savedProduct = productRepository.save(testProduct);
+
+        ResponseEntity<PageResponse<OptionResponseDto>> responseEntity = client.get()
+                                                                               .uri(url,
+                                                                                       savedProduct.getId())
+                                                                               .retrieve()
+                                                                               .toEntity(
+                                                                                       new ParameterizedTypeReference<>() {
+                                                                                       });
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        OptionTest.PageResponse<OptionResponseDto> page = responseEntity.getBody();
+        assertAll(
+                () -> assertThat(page.getContent().size()).isEqualTo(2),
+                () -> assertThat(page.getContent().get(0).name()).isEqualTo("테스트 옵션1"),
+                () -> assertThat(page.getContent().get(1).name()).isEqualTo("테스트 옵션2")
+        );
+    }
+
+    static class PageResponse<T> extends PageImpl<T> {
+
+        @JsonCreator(mode = Mode.PROPERTIES)
+        public PageResponse(@JsonProperty("content") List<T> content,
+                @JsonProperty("number") int number,
+                @JsonProperty("size") int size,
+                @JsonProperty("totalElements") Long totalElements,
+                @JsonProperty("pageable") JsonNode pageable,
+                @JsonProperty("last") boolean last,
+                @JsonProperty("totalPages") int totalPages,
+                @JsonProperty("sort") JsonNode sort,
+                @JsonProperty("first") boolean first,
+                @JsonProperty("numberOfElements") int numberOfElements
+        ) {
+            super(content, PageRequest.of(number, size), totalElements);
+        }
     }
 }
