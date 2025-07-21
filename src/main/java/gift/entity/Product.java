@@ -56,7 +56,7 @@ public class Product {
 
     public void updateNameAndStatus(String name, ProductStatus status) {
         this.name = name;
-        this.status = status;
+        changeStatus(status);
     }
 
     public void updatePrice(Integer price) {
