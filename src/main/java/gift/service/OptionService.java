@@ -4,6 +4,7 @@ import gift.dto.OptionRequestDto;
 import gift.dto.OptionResponseDto;
 import gift.entity.Option;
 import gift.entity.Product;
+import gift.exception.LastOptionException;
 import gift.exception.OptionNameAlreadyExistsException;
 import gift.exception.OptionNotFoundException;
 import gift.exception.PermissionDeniedException;
@@ -57,6 +58,23 @@ public class OptionService {
         optionRepository.save(option);
 
         return OptionResponseDto.from(option);
+    }
+
+    @Transactional
+    public void deleteOption(Long productId, Long optionId) {
+        Option option = findOptionOrThrow(optionId);
+
+        Product product = option.getProduct();
+        if (!product.getId().equals(productId)) {
+            throw new PermissionDeniedException("해당 상품에 속한 옵션이 아닙니다.");
+        }
+
+        if (product.getOptions().size() == 1) {
+            throw new LastOptionException();
+        }
+
+        product.removeOption(option);
+        optionRepository.deleteById(optionId);
     }
 
     private Option findOptionOrThrow(Long optionId) {
