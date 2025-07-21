@@ -4,9 +4,12 @@ import gift.dto.OptionRequestDto;
 import gift.dto.OptionResponseDto;
 import gift.service.OptionService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -53,5 +56,14 @@ public class OptionController {
 
         optionService.deleteOption(productId, optionId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    // 옵션 목록 조회
+    @GetMapping
+    public ResponseEntity<Page<OptionResponseDto>> getOptionsByProductId(
+            @PathVariable Long productId,
+            Pageable pageable) {
+
+        return ResponseEntity.ok(optionService.getOptionsByProductId(productId, pageable));
     }
 }

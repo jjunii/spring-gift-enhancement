@@ -9,6 +9,8 @@ import gift.exception.OptionNameAlreadyExistsException;
 import gift.exception.OptionNotFoundException;
 import gift.exception.PermissionDeniedException;
 import gift.repository.OptionRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,6 +77,15 @@ public class OptionService {
 
         product.removeOption(option);
         optionRepository.deleteById(optionId);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OptionResponseDto> getOptionsByProductId(Long productId, Pageable pageable) {
+        productService.findProductOrThrow(productId);
+
+        Page<Option> options = optionRepository.findAllByProductId(productId, pageable);
+
+        return options.map(OptionResponseDto::from);
     }
 
     private Option findOptionOrThrow(Long optionId) {
