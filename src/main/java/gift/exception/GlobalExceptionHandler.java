@@ -126,4 +126,17 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.of(pd).build();
     }
+
+    @ExceptionHandler(OptionNameAlreadyExistsException.class)
+    public ResponseEntity<ProblemDetail> handleOptionNameAlreadyExistsException(
+            OptionNameAlreadyExistsException ex) {
+
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+
+        pd.setType(URI.create("/errors/option-name-already-exists"));
+        pd.setTitle("이미 존재하는 옵션 이름입니다.");
+        pd.setDetail(ex.getMessage());
+
+        return ResponseEntity.of(pd).build();
+    }
 }
