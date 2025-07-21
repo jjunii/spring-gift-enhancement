@@ -5,6 +5,8 @@ import gift.dto.OptionResponseDto;
 import gift.entity.Option;
 import gift.entity.Product;
 import gift.exception.OptionNameAlreadyExistsException;
+import gift.exception.OptionNotFoundException;
+import gift.exception.PermissionDeniedException;
 import gift.repository.OptionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,5 +36,31 @@ public class OptionService {
         Option savedOption = optionRepository.save(option);
 
         return OptionResponseDto.from(savedOption);
+    }
+
+    @Transactional
+    public OptionResponseDto updateOption(Long productId, Long optionId,
+            OptionRequestDto optionRequestDto) {
+        Option option = findOptionOrThrow(optionId);
+
+        if (!option.getProduct().getId().equals(productId)) {
+            throw new PermissionDeniedException("해당 상품에 속한 옵션이 아닙니다.");
+        }
+
+        if (optionRepository.existsByProductIdAndNameAndIdNot(productId, optionRequestDto.name(),
+                optionId)) {
+            throw new OptionNameAlreadyExistsException(optionRequestDto.name());
+        }
+
+        option.update(optionRequestDto.name(), optionRequestDto.quantity());
+
+        optionRepository.save(option);
+
+        return OptionResponseDto.from(option);
+    }
+
+    private Option findOptionOrThrow(Long optionId) {
+        return optionRepository.findById(optionId)
+                               .orElseThrow(() -> new OptionNotFoundException(optionId));
     }
 }

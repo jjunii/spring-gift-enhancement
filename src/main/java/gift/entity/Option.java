@@ -50,6 +50,11 @@ public class Option {
         this.quantity -= quantity;
     }
 
+    public void update(String name, Integer quantity) {
+        this.name = name;
+        this.quantity = quantity;
+    }
+
     public Long getId() {
         return id;
     }

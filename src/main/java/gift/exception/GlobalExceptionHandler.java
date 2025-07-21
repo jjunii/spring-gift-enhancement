@@ -139,4 +139,17 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.of(pd).build();
     }
+
+    @ExceptionHandler(OptionNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleOptionNotFoundException(
+            OptionNotFoundException ex) {
+
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+
+        pd.setType(URI.create("/errors/option-not-found"));
+        pd.setTitle("옵션을 찾을 수 없습니다.");
+        pd.setDetail(ex.getMessage());
+
+        return ResponseEntity.of(pd).build();
+    }
 }
