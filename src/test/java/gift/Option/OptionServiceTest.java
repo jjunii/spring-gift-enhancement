@@ -7,7 +7,7 @@ import gift.dto.OptionRequestDto;
 import gift.entity.Option;
 import gift.entity.Product;
 import gift.entity.ProductStatus;
-import gift.exception.LastOptionException;
+import gift.exception.CannotDeleteLastOptionException;
 import gift.exception.OptionNameAlreadyExistsException;
 import gift.exception.PermissionDeniedException;
 import gift.repository.OptionRepository;
@@ -101,7 +101,7 @@ class OptionServiceTest {
 
         given(optionRepository.findById(optionId)).willReturn(Optional.of(testOption1));
 
-        assertThrows(LastOptionException.class, () -> {
+        assertThrows(CannotDeleteLastOptionException.class, () -> {
             optionService.deleteOption(productId, optionId);
         });
     }

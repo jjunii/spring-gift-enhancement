@@ -4,7 +4,7 @@ import gift.dto.OptionRequestDto;
 import gift.dto.OptionResponseDto;
 import gift.entity.Option;
 import gift.entity.Product;
-import gift.exception.LastOptionException;
+import gift.exception.CannotDeleteLastOptionException;
 import gift.exception.OptionNameAlreadyExistsException;
 import gift.exception.OptionNotFoundException;
 import gift.exception.PermissionDeniedException;
@@ -72,7 +72,7 @@ public class OptionService {
         }
 
         if (product.getOptions().size() == 1) {
-            throw new LastOptionException();
+            throw new CannotDeleteLastOptionException();
         }
 
         product.removeOption(option);

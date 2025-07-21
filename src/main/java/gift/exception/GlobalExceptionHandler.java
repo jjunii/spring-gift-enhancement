@@ -153,13 +153,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.of(pd).build();
     }
 
-    @ExceptionHandler(LastOptionException.class)
-    public ResponseEntity<ProblemDetail> handleLastOptionException(
-            LastOptionException ex) {
+    @ExceptionHandler(CannotDeleteLastOptionException.class)
+    public ResponseEntity<ProblemDetail> handleCannotDeleteLastOptionException(
+            CannotDeleteLastOptionException ex) {
 
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
 
-        pd.setType(URI.create("/errors/last-option"));
+        pd.setType(URI.create("/errors/cannot-delete-last-option"));
         pd.setTitle("옵션을 삭제할 수 없습니다.");
         pd.setDetail(ex.getMessage());
 
