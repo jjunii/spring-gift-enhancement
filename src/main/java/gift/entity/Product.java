@@ -29,7 +29,7 @@ public class Product {
     private String imageUrl;
 
     @OneToMany(
-            mappedBy = "option",
+            mappedBy = "product",
             cascade = CascadeType.ALL
     )
     private List<Option> options = new ArrayList<>();
