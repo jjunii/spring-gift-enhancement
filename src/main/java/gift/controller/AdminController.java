@@ -1,6 +1,7 @@
 package gift.controller;
 
-import gift.dto.ProductRequestDto;
+import gift.dto.ProductCreateRequestDto;
+import gift.dto.ProductUpdateRequestDto;
 import gift.entity.ProductStatus;
 import gift.exception.ProductNotFoundException;
 import gift.service.ProductService;
@@ -65,20 +66,20 @@ public class AdminController {
     // 상품 추가
     @GetMapping("/new")
     public String newProduct(Model model) {
-        model.addAttribute("product", new ProductRequestDto("", 0, ""));
+        model.addAttribute("product", new ProductCreateRequestDto("", 0, ""));
         return "admin/products/new";
     }
 
     @PostMapping
     public String addProduct(
-            @Valid @ModelAttribute("product") ProductRequestDto productRequestDto,
+            @Valid @ModelAttribute("product") ProductCreateRequestDto productCreateDto,
             BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             return "admin/products/new";
         }
 
-        productService.saveProduct(productRequestDto);
+        productService.saveProduct(productCreateDto);
         return "redirect:/admin/products";
     }
 
@@ -97,7 +98,7 @@ public class AdminController {
     @PutMapping("/{id}")
     public String updateProduct(
             @PathVariable Long id,
-            @Valid @ModelAttribute("product") ProductRequestDto productRequestDto,
+            @Valid @ModelAttribute("product") ProductUpdateRequestDto productUpdateDto,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes,
             Model model) {
@@ -108,7 +109,7 @@ public class AdminController {
         }
 
         try {
-            productService.updateProduct(id, productRequestDto);
+            productService.updateProduct(id, productUpdateDto);
         } catch (ProductNotFoundException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", "상품을 찾을 수 없습니다.");
         }

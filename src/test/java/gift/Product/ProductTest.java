@@ -3,8 +3,9 @@ package gift.Product;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import gift.dto.ProductRequestDto;
+import gift.dto.ProductCreateRequestDto;
 import gift.dto.ProductResponseDto;
+import gift.dto.ProductUpdateRequestDto;
 import gift.entity.ProductStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,14 +38,14 @@ class ProductTest {
     @ValueSource(strings = {"이름이 15자를 초과하는 경우", "잘못된 특수문자 #"})
     void 상품명_유효성_검증_실패(String invalidName) {
         String url = "http://localhost:" + port + "/api/products";
-        ProductRequestDto productRequestDto = new ProductRequestDto(invalidName, 10000,
+        ProductCreateRequestDto productCreateDto = new ProductCreateRequestDto(invalidName, 10000,
                 "https://example.com/image.jpg");
 
         HttpClientErrorException exception = assertThrows(
                 HttpClientErrorException.BadRequest.class,
                 () -> client.post()
                             .uri(url)
-                            .body(productRequestDto)
+                            .body(productCreateDto)
                             .retrieve()
                             .toBodilessEntity()
         );
@@ -55,12 +56,12 @@ class ProductTest {
     @Test
     void 카카오_미포함_상품명_등록시_승인() {
         String url = "http://localhost:" + port + "/api/products";
-        ProductRequestDto productRequestDto = new ProductRequestDto("상품", 10000,
+        ProductCreateRequestDto productCreateDto = new ProductCreateRequestDto("상품", 10000,
                 "https://example.com/image.jpg");
 
         ResponseEntity<ProductResponseDto> responseEntity = client.post()
                                                                   .uri(url)
-                                                                  .body(productRequestDto)
+                                                                  .body(productCreateDto)
                                                                   .retrieve()
                                                                   .toEntity(
                                                                           ProductResponseDto.class);
@@ -72,12 +73,12 @@ class ProductTest {
     @Test
     void 카카오_포함_상품명_등록시_승인대기() {
         String url = "http://localhost:" + port + "/api/products";
-        ProductRequestDto productRequestDto = new ProductRequestDto("카카오상품", 10000,
+        ProductCreateRequestDto productCreateDto = new ProductCreateRequestDto("카카오상품", 10000,
                 "https://example.com/image.jpg");
 
         ResponseEntity<ProductResponseDto> responseEntity = client.post()
                                                                   .uri(url)
-                                                                  .body(productRequestDto)
+                                                                  .body(productCreateDto)
                                                                   .retrieve()
                                                                   .toEntity(
                                                                           ProductResponseDto.class);
@@ -95,13 +96,13 @@ class ProductTest {
                           "INSERT INTO product (name, price, image_url, status) VALUES ('상품', 10000, 'https://example.com/image.jpg', 'APPROVED')")
                   .update(keyHolder);
 
-        ProductRequestDto productRequestDto = new ProductRequestDto("카카오 상품", 15000,
+        ProductUpdateRequestDto productUpdateDto = new ProductUpdateRequestDto("카카오 상품", 15000,
                 "http://example.com/new.jpg");
 
         ResponseEntity<ProductResponseDto> responseEntity = client.put()
                                                                   .uri(url, keyHolder.getKey()
                                                                                      .longValue())
-                                                                  .body(productRequestDto)
+                                                                  .body(productUpdateDto)
                                                                   .retrieve()
                                                                   .toEntity(
                                                                           ProductResponseDto.class);

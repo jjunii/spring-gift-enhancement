@@ -1,7 +1,8 @@
 package gift.service;
 
-import gift.dto.ProductRequestDto;
+import gift.dto.ProductCreateRequestDto;
 import gift.dto.ProductResponseDto;
+import gift.dto.ProductUpdateRequestDto;
 import gift.entity.Product;
 import gift.entity.ProductStatus;
 import gift.exception.ProductNotFoundException;
@@ -21,12 +22,12 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDto saveProduct(ProductRequestDto productRequestDto) {
+    public ProductResponseDto saveProduct(ProductCreateRequestDto productCreateDto) {
         Product product = new Product(
-                productRequestDto.name(),
-                productRequestDto.price(),
-                productRequestDto.imageUrl(),
-                ProductStatus.getProductStatus(productRequestDto.name()));
+                productCreateDto.name(),
+                productCreateDto.price(),
+                productCreateDto.imageUrl(),
+                ProductStatus.getProductStatus(productCreateDto.name()));
 
         Product savedProduct = productRepository.save(product);
 
@@ -41,14 +42,23 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDto updateProduct(Long productId, ProductRequestDto productRequestDto) {
+    public ProductResponseDto updateProduct(Long productId,
+            ProductUpdateRequestDto productUpdateDto) {
         Product product = findProductOrThrow(productId);
-        product.update(
-                productRequestDto.name(),
-                productRequestDto.price(),
-                productRequestDto.imageUrl(),
-                ProductStatus.getProductStatus(productRequestDto.name())
-        );
+
+        if (productUpdateDto.name() != null && !productUpdateDto.name().isBlank()) {
+            ProductStatus newStatus = ProductStatus.getProductStatus(productUpdateDto.name());
+            product.updateNameAndStatus(productUpdateDto.name(), newStatus);
+        }
+
+        if (productUpdateDto.price() != null) {
+            product.updatePrice(productUpdateDto.price());
+        }
+
+        if (productUpdateDto.imageUrl() != null && !productUpdateDto.imageUrl().isBlank()) {
+            product.updateImageUrl(productUpdateDto.imageUrl());
+        }
+
         productRepository.save(product);
 
         return ProductResponseDto.from(product);

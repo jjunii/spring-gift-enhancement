@@ -53,11 +53,17 @@ public class Product {
         this.status = status;
     }
 
-    public void update(String name, Integer price, String imageUrl, ProductStatus status) {
+    public void updateNameAndStatus(String name, ProductStatus status) {
         this.name = name;
-        this.price = price;
-        this.imageUrl = imageUrl;
         this.status = status;
+    }
+
+    public void updatePrice(Integer price) {
+        this.price = price;
+    }
+
+    public void updateImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public void changeStatus(ProductStatus newStatus) {
