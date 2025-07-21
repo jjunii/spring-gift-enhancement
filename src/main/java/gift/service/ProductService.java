@@ -107,7 +107,7 @@ public class ProductService {
         productRepository.save(product);
     }
 
-    Product findProductOrThrow(Long productId) {
+    public Product findProductOrThrow(Long productId) {
         return productRepository.findById(productId)
                                 .orElseThrow(() -> new ProductNotFoundException(productId));
     }
