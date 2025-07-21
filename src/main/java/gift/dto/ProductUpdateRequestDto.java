@@ -1,8 +1,10 @@
 package gift.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 
 public record ProductUpdateRequestDto(
         @Size(max = 15, message = "상품명은 공백을 포함하여 최대 15자까지 입력할 수 있습니다.")
@@ -13,7 +15,10 @@ public record ProductUpdateRequestDto(
         @PositiveOrZero(message = "가격은 0 이상이어야 합니다.")
         Integer price,
 
-        String imageUrl
+        String imageUrl,
+
+        @Valid
+        List<OptionRequestDto> options
 ) {
 
 }
