@@ -126,4 +126,56 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.of(pd).build();
     }
+
+    @ExceptionHandler(OptionNameAlreadyExistsException.class)
+    public ResponseEntity<ProblemDetail> handleOptionNameAlreadyExistsException(
+            OptionNameAlreadyExistsException ex) {
+
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+
+        pd.setType(URI.create("/errors/option-name-already-exists"));
+        pd.setTitle("이미 존재하는 옵션 이름입니다.");
+        pd.setDetail(ex.getMessage());
+
+        return ResponseEntity.of(pd).build();
+    }
+
+    @ExceptionHandler(OptionNotFoundException.class)
+    public ResponseEntity<ProblemDetail> handleOptionNotFoundException(
+            OptionNotFoundException ex) {
+
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+
+        pd.setType(URI.create("/errors/option-not-found"));
+        pd.setTitle("옵션을 찾을 수 없습니다.");
+        pd.setDetail(ex.getMessage());
+
+        return ResponseEntity.of(pd).build();
+    }
+
+    @ExceptionHandler(CannotDeleteLastOptionException.class)
+    public ResponseEntity<ProblemDetail> handleCannotDeleteLastOptionException(
+            CannotDeleteLastOptionException ex) {
+
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+
+        pd.setType(URI.create("/errors/cannot-delete-last-option"));
+        pd.setTitle("옵션을 삭제할 수 없습니다.");
+        pd.setDetail(ex.getMessage());
+
+        return ResponseEntity.of(pd).build();
+    }
+
+    @ExceptionHandler(InsufficientQuantityException.class)
+    public ResponseEntity<ProblemDetail> handleInsufficientQuantityException(
+            InsufficientQuantityException ex) {
+
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+
+        pd.setType(URI.create("/errors/insufficient-quantity"));
+        pd.setTitle("옵션의 수량을 차감할 수 없습니다.");
+        pd.setDetail(ex.getMessage());
+
+        return ResponseEntity.of(pd).build();
+    }
 }
